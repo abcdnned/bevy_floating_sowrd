@@ -27,7 +27,6 @@ pub fn update_spawning(
     primary_query: Query<&Window, With<PrimaryWindow>>,
     mut spawner_query: Query<&mut EnemySpawner>,
     time: Res<Time>,
-    asset_server: Res<AssetServer>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
