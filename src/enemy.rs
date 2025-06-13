@@ -27,6 +27,7 @@ pub fn update_spawning(
     primary_query: Query<&Window, With<PrimaryWindow>>,
     mut spawner_query: Query<&mut EnemySpawner>,
     time: Res<Time>,
+    asset_server: Res<AssetServer>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -40,7 +41,7 @@ pub fn update_spawning(
 
             spawner.timer = spawner.cooldown;
 
-            let mut spawn_transform = Transform::from_scale(Vec3::splat(5.));
+            let mut spawn_transform = Transform::default().with_scale(Vec3::splat(30.));
 
             let mut rng = rand::thread_rng();
 
@@ -78,8 +79,7 @@ pub fn update_spawning(
                     speed: 50.0,
                 },
                 Mesh2d(meshes.add(Circle::default())),
-                MeshMaterial2d(materials.add(Color::from(Color::srgb(1.0, 0.0, 0.0)))), // BLUE
-                Transform::default().with_scale(Vec3::splat(30.)),
+                MeshMaterial2d(materials.add(Color::srgb(1.0, 0.0, 0.0))), // Red color
                 spawn_transform,
             ));
         }
