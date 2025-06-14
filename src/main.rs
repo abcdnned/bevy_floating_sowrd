@@ -2,9 +2,11 @@ mod sword;
 mod cursor;
 mod player;
 mod enemy;
+mod sword_collider;
 
 use crate::player::PlayerPlugin;
 use crate::sword::SwordPlugin;
+use crate::sword_collider::SwordColliderPlugin;
 use crate::cursor::CursorPlugin;
 use crate::enemy::{EnemyPlugin, EnemySpawner};
 use bevy::prelude::*;
@@ -15,6 +17,7 @@ fn main() {
         .add_plugins((
             CursorPlugin,  // Handles cursor hiding/showing
             SwordPlugin,   // Handles sword following mouse
+            SwordColliderPlugin,
             PlayerPlugin,
             EnemyPlugin,
         ))
