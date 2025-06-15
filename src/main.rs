@@ -3,6 +3,7 @@ mod cursor;
 mod player;
 mod enemy;
 mod sword_collider;
+mod arc_motion;
 
 use crate::player::PlayerPlugin;
 use crate::sword::SwordPlugin;

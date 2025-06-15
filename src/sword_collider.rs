@@ -40,7 +40,6 @@ fn handle_collisions(
         match collision_event {
             CollisionEvent::Started(entity1, entity2, _) => {
                 println!("Collision started between {:?} and {:?}", entity1, entity2);
-                
                 let (sword_entity, enemy_entity) = 
                     if sword_query.contains(*entity1) && enemy_query.contains(*entity2) {
                         (*entity1, *entity2)
@@ -61,7 +60,6 @@ fn handle_collisions(
                 }
             }
             CollisionEvent::Stopped(entity1, entity2, _) => {
-                println!("Collision stopped between {:?} and {:?}", entity1, entity2);
             }
         }
     }
