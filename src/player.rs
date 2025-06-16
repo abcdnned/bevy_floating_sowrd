@@ -12,7 +12,7 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player)
-           .add_systems(Update, move_player);
+            .add_systems(Update, move_player);
     }
 }
 
@@ -25,14 +25,16 @@ fn spawn_player(
         Mesh2d(meshes.add(Circle::default())),
         MeshMaterial2d(materials.add(Color::from(Color::srgb(0.0, 0.0, 1.0)))), // BLUE
         Transform::default().with_scale(Vec3::splat(30.)),
-        PlayerMovement { speed: MOVEMENT_SPEED },
+        PlayerMovement {
+            speed: MOVEMENT_SPEED,
+        },
     ));
 }
 
 pub fn move_player(
     time: Res<Time>,
     keys: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(&PlayerMovement, &mut Transform)>
+    mut query: Query<(&PlayerMovement, &mut Transform)>,
 ) {
     for (player_movement, mut transform) in query.iter_mut() {
         if keys.pressed(KeyCode::KeyW) || keys.pressed(KeyCode::ArrowUp) {

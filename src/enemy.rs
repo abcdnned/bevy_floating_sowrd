@@ -1,6 +1,6 @@
 use bevy::{prelude::*, window::PrimaryWindow};
-use rand::Rng;
 use bevy_rapier2d::prelude::*;
+use rand::Rng;
 
 use crate::player::PlayerMovement;
 
@@ -82,7 +82,7 @@ pub fn update_spawning(
                 MeshMaterial2d(materials.add(Color::srgb(1.0, 0.0, 0.0))), // Red color
                 RigidBody::Dynamic,
                 Collider::ball(0.5),
-                GravityScale(0.0), 
+                GravityScale(0.0),
                 spawn_transform,
             ));
         }

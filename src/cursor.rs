@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy::window::{PrimaryWindow};
+use bevy::window::PrimaryWindow;
 
 pub struct CursorPlugin;
 

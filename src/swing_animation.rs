@@ -1,14 +1,14 @@
+use crate::sword::Sword;
 use bevy::prelude::*;
 use nalgebra::{Point2, Vector2};
 use std::f32::consts::PI;
-use crate::sword::Sword;
 
 pub struct SwingAnimationPlugin;
 
 impl Plugin for SwingAnimationPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup)
-           .add_systems(Update, (animate_sword_swing, handle_input));
+            .add_systems(Update, (animate_sword_swing, handle_input));
     }
 }
 
@@ -29,8 +29,7 @@ pub enum SwingType {
     Circular,
 }
 
-fn setup(
-) {
+fn setup() {
     // Instructions: Press H (Horizontal), V (Vertical), D (Diagonal), C (Circular)
     println!("Controls: Press H (Horizontal), V (Vertical), D (Diagonal), C (Circular)");
 }
@@ -68,7 +67,7 @@ fn animate_sword_swing(
         if swing.is_swinging {
             swing.timer.tick(time.delta());
             let progress = swing.timer.elapsed_secs() / swing.timer.duration().as_secs_f32();
-            
+
             if progress >= 1.0 {
                 swing.is_swinging = false;
                 // Reset to neutral position
@@ -82,7 +81,7 @@ fn animate_sword_swing(
                     SwingType::Diagonal => calculate_diagonal_swing(progress),
                     SwingType::Circular => calculate_circular_swing(progress),
                 };
-                
+
                 transform.translation = Vec3::new(position.x, position.y, 0.0);
                 transform.rotation = Quat::from_rotation_z(rotation);
             }
@@ -94,57 +93,57 @@ fn calculate_horizontal_swing(t: f32) -> (Vec2, f32) {
     // Horizontal arc swing from left to right
     let progress = smooth_step(t);
     let angle = lerp(-PI * 0.4, PI * 0.4, progress);
-    
+
     // Use nalgebra for 2D calculations
     let radius = 60.0;
     let center = Point2::new(0.0, -20.0);
-    
+
     // Calculate position on arc
     let x = angle.sin() * radius;
     let y = center.y + (1.0 - angle.cos()) * 20.0; // Arc motion
-    
+
     let position = Vec2::new(x, y);
     let rotation = angle + PI * 0.5; // Sword follows the arc
-    
+
     (position, rotation)
 }
 
 fn calculate_vertical_swing(t: f32) -> (Vec2, f32) {
     // Vertical swing from top to bottom
     let progress = smooth_step(t);
-    
+
     // Use nalgebra for bezier curve
-    let p0 = Point2::new(0.0, 80.0);   // Start position (high)
-    let p1 = Point2::new(15.0, 40.0);  // Control point (slight curve)
-    let p2 = Point2::new(0.0, -40.0);  // End position (low)
-    
+    let p0 = Point2::new(0.0, 80.0); // Start position (high)
+    let p1 = Point2::new(15.0, 40.0); // Control point (slight curve)
+    let p2 = Point2::new(0.0, -40.0); // End position (low)
+
     // Quadratic bezier curve
     let pos = quadratic_bezier(p0, p1, p2, progress);
     let position = Vec2::new(pos.x, pos.y);
-    
+
     // Rotation follows the swing direction
     let rotation = lerp(-PI * 0.2, PI * 0.7, progress);
-    
+
     (position, rotation)
 }
 
 fn calculate_diagonal_swing(t: f32) -> (Vec2, f32) {
     // Diagonal slash from upper-left to lower-right
     let progress = smooth_step(t);
-    
+
     // Create a curved diagonal path using nalgebra
     let start = Point2::new(-60.0, 60.0);
     let control1 = Point2::new(-20.0, 20.0);
     let control2 = Point2::new(20.0, -20.0);
     let end = Point2::new(60.0, -60.0);
-    
+
     // Cubic bezier curve
     let pos = cubic_bezier(start, control1, control2, end, progress);
     let position = Vec2::new(pos.x, pos.y);
-    
+
     // Rotation follows the diagonal direction
     let rotation = lerp(PI * 0.75, -PI * 0.25, progress);
-    
+
     (position, rotation)
 }
 
@@ -152,17 +151,17 @@ fn calculate_circular_swing(t: f32) -> (Vec2, f32) {
     // Full circular swing
     let progress = ease_in_out_cubic(t);
     let angle = progress * PI * 2.0; // Full circle
-    
+
     // Use nalgebra for circular motion
     let radius = 50.0;
     let center = Point2::new(0.0, -10.0);
-    
+
     let x = center.x + angle.cos() * radius;
     let y = center.y + angle.sin() * radius;
-    
+
     let position = Vec2::new(x, y);
     let rotation = angle + PI * 0.5; // Sword tangent to circle
-    
+
     (position, rotation)
 }
 
@@ -171,34 +170,34 @@ fn quadratic_bezier(p0: Point2<f32>, p1: Point2<f32>, p2: Point2<f32>, t: f32) -
     let u = 1.0 - t;
     let tt = t * t;
     let uu = u * u;
-    
+
     // Convert to vectors for arithmetic, then back to point
     let v0 = p0.coords;
     let v1 = p1.coords;
     let v2 = p2.coords;
-    
+
     Point2::from(v0 * uu + v1 * (2.0 * u * t) + v2 * tt)
 }
 
 fn cubic_bezier(
-    p0: Point2<f32>, 
-    p1: Point2<f32>, 
-    p2: Point2<f32>, 
-    p3: Point2<f32>, 
-    t: f32
+    p0: Point2<f32>,
+    p1: Point2<f32>,
+    p2: Point2<f32>,
+    p3: Point2<f32>,
+    t: f32,
 ) -> Point2<f32> {
     let u = 1.0 - t;
     let tt = t * t;
     let uu = u * u;
     let uuu = uu * u;
     let ttt = tt * t;
-    
+
     // Convert to vectors for arithmetic, then back to point
     let v0 = p0.coords;
     let v1 = p1.coords;
     let v2 = p2.coords;
     let v3 = p3.coords;
-    
+
     Point2::from(v0 * uuu + v1 * (3.0 * uu * t) + v2 * (3.0 * u * tt) + v3 * ttt)
 }
 

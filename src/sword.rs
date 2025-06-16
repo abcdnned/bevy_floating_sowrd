@@ -1,7 +1,7 @@
-use bevy::prelude::*;
-use bevy::window::PrimaryWindow;
 use crate::swing_animation::SwingAnimation;
 use crate::swing_animation::SwingType;
+use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
 
 #[derive(Component)]
 pub struct Sword {
@@ -35,7 +35,7 @@ fn spawn_sword(
     // The sprite sheet has 2 sprites arranged in a row, and they are all 64px x 64px
     let layout = TextureAtlasLayout::from_grid(UVec2::splat(64), 1, 1, None, None);
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
-    
+
     commands.spawn((
         Sprite {
             image: texture,
@@ -62,11 +62,19 @@ fn update_sword_position(
     window_query: Query<&Window, With<PrimaryWindow>>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
 ) {
-    let Ok(window) = window_query.single() else { return };
-    let Some(cursor_pos) = window.cursor_position() else { return };
-    let Ok((camera, camera_transform)) = camera_query.single() else { return };
-    let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, cursor_pos) else { return };
-  
+    let Ok(window) = window_query.single() else {
+        return;
+    };
+    let Some(cursor_pos) = window.cursor_position() else {
+        return;
+    };
+    let Ok((camera, camera_transform)) = camera_query.single() else {
+        return;
+    };
+    let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, cursor_pos) else {
+        return;
+    };
+
     for (mut transform, sword) in sword_query.iter_mut() {
         transform.translation.x = world_pos.x + sword.offset.x;
         transform.translation.y = world_pos.y + sword.offset.y;
