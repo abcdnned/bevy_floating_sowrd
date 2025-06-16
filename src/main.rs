@@ -3,13 +3,14 @@ mod cursor;
 mod player;
 mod enemy;
 mod sword_collider;
-mod arc_motion;
+mod swing_animation;
 
 use crate::player::PlayerPlugin;
 use crate::sword::SwordPlugin;
 use crate::sword_collider::SwordColliderPlugin;
 use crate::cursor::CursorPlugin;
 use crate::enemy::{EnemyPlugin, EnemySpawner};
+use crate::swing_animation::SwingAnimationPlugin;
 use bevy::prelude::*;
 
 fn main() {
@@ -20,7 +21,8 @@ fn main() {
             SwordPlugin,   // Handles sword following mouse
             SwordColliderPlugin,
             PlayerPlugin,
-            EnemyPlugin,
+            SwingAnimationPlugin,
+            // EnemyPlugin,
         ))
         .add_systems(Startup, setup)
         .run();

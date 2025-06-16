@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use crate::swing_animation::SwingAnimation;
+use crate::swing_animation::SwingType;
 
 #[derive(Component)]
 pub struct Sword {
@@ -44,6 +46,13 @@ fn spawn_sword(
             ..default()
         },
         Transform::from_xyz(0.0, 0.0, 1.0),
+        SwingAnimation {
+            timer: Timer::from_seconds(0.8, TimerMode::Once),
+            start_pos: Vec2::ZERO,
+            start_rotation: 0.0,
+            is_swinging: false,
+            swing_type: SwingType::Horizontal,
+        },
         Sword::default(),
     ));
 }

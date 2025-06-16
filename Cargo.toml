@@ -7,8 +7,8 @@ edition = "2024"
 bevy = { version = "0.16.1", features = ["dynamic_linking", "bevy_sprite"] }
 rand = "0.8"
 bevy_rapier2d = "0.30"
-bevy_tweening = "0.8.0"
 image = "0.25"
+nalgebra = "0.33"
 
 # Enable a small amount of optimization in the dev profile.
 [profile.dev]
