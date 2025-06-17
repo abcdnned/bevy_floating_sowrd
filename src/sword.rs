@@ -73,13 +73,10 @@ fn spawn_sword_with_node(
             start_rotation: -PI * 0.3, // Rotated back (~-54 degrees)
             
             // Phase 2: Main swing
-            swing_timer: Timer::from_seconds(0.4, TimerMode::Once), // 400ms for main swing
+            swing_timer: Timer::from_seconds(0.6, TimerMode::Once), // 400ms for main swing
             
             // Phase 3: Recovery - Move to rest position  
             end_timer: Timer::from_seconds(0.2, TimerMode::Once), // 200ms to reach rest position
-            end_pos: Vec2::new(10.0, -30.0), // Forward and down after swing
-            end_rotation: PI * 0.1, // Slightly rotated forward (~18 degrees)
-            
             // State tracking
             is_swinging: false,
             swing_type: SwingType::Vertical,
