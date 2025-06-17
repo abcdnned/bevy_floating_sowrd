@@ -1,7 +1,9 @@
 use crate::swing_animation::SwingAnimation;
 use crate::swing_animation::SwingType;
+use crate::swing_animation::SwingPhase;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use std::f32::consts::PI;
 
 #[derive(Component)]
 pub struct Sword {
@@ -62,13 +64,27 @@ fn spawn_sword_with_node(
                 ..default()
             },
             Transform::from_xyz(0.0, 0.0, 1.0), // Initial position relative to node
-            SwingAnimation {
-                timer: Timer::from_seconds(0.8, TimerMode::Once),
-                start_pos: Vec2::ZERO,
-                start_rotation: 0.0,
-                is_swinging: false,
-                swing_type: SwingType::Vertical,
-            },
+        SwingAnimation {
+            timer: Timer::from_seconds(0.8, TimerMode::Once), // Total animation time (legacy)
+            
+            // Phase 1: Startup - Move to attack position
+            startup_timer: Timer::from_seconds(0.2, TimerMode::Once), // 200ms to reach attack position
+            start_pos: Vec2::new(-20.0, 60.0), // Back and up for windup
+            start_rotation: -PI * 0.3, // Rotated back (~-54 degrees)
+            
+            // Phase 2: Main swing
+            swing_timer: Timer::from_seconds(0.4, TimerMode::Once), // 400ms for main swing
+            
+            // Phase 3: Recovery - Move to rest position  
+            end_timer: Timer::from_seconds(0.2, TimerMode::Once), // 200ms to reach rest position
+            end_pos: Vec2::new(10.0, -30.0), // Forward and down after swing
+            end_rotation: PI * 0.1, // Slightly rotated forward (~18 degrees)
+            
+            // State tracking
+            is_swinging: false,
+            swing_type: SwingType::Vertical,
+            current_phase: SwingPhase::Startup, // Will be set properly in start_swing()
+        },
             Sword::default(),
         ))
         .id();
