@@ -67,7 +67,7 @@ fn spawn_sword_with_node(
                 start_pos: Vec2::ZERO,
                 start_rotation: 0.0,
                 is_swinging: false,
-                swing_type: SwingType::Horizontal,
+                swing_type: SwingType::Vertical,
             },
             Sword::default(),
         ))

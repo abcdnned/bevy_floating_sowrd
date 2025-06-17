@@ -7,8 +7,7 @@ pub struct SwingAnimationPlugin;
 
 impl Plugin for SwingAnimationPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup)
-            .add_systems(Update, (animate_sword_swing, handle_input));
+        app.add_systems(Update, (animate_sword_swing, handle_input));
     }
 }
 
@@ -17,40 +16,30 @@ pub struct SwingAnimation {
     pub timer: Timer,
     pub start_pos: Vec2,
     pub start_rotation: f32,
+    pub startup_timer: Timer,
+    pub end_pos: Vec2,
+    pub end_rotation: f32,
+    pub end_timer: Timer,
     pub is_swinging: bool,
     pub swing_type: SwingType,
 }
 
 #[derive(Clone)]
 pub enum SwingType {
-    Horizontal,
     Vertical,
-    Diagonal,
-    Circular,
-}
-
-fn setup() {
-    // Instructions: Press H (Horizontal), V (Vertical), D (Diagonal), C (Circular)
-    println!("Controls: Press H (Horizontal), V (Vertical), D (Diagonal), C (Circular)");
 }
 
 fn handle_input(
-    keyboard: Res<ButtonInput<KeyCode>>,
-    mut sword_query: Query<&mut SwingAnimation, With<Sword>>,
+   mouse: Res<ButtonInput<MouseButton>>,
+   mut sword_query: Query<&mut SwingAnimation, With<Sword>>,
 ) {
-    if let Ok(mut swing) = sword_query.single_mut() {
-        if !swing.is_swinging {
-            if keyboard.just_pressed(KeyCode::KeyH) {
-                start_swing(&mut swing, SwingType::Horizontal);
-            } else if keyboard.just_pressed(KeyCode::KeyV) {
-                start_swing(&mut swing, SwingType::Vertical);
-            } else if keyboard.just_pressed(KeyCode::KeyD) {
-                start_swing(&mut swing, SwingType::Diagonal);
-            } else if keyboard.just_pressed(KeyCode::KeyC) {
-                start_swing(&mut swing, SwingType::Circular);
-            }
-        }
-    }
+   if let Ok(mut swing) = sword_query.single_mut() {
+       if !swing.is_swinging {
+           if mouse.just_pressed(MouseButton::Left) {
+               start_swing(&mut swing, SwingType::Vertical);
+           }
+       }
+   }
 }
 
 fn start_swing(swing: &mut SwingAnimation, swing_type: SwingType) {
@@ -76,36 +65,13 @@ fn animate_sword_swing(
             } else {
                 // Use different curves based on swing type
                 let (position, rotation) = match swing.swing_type {
-                    SwingType::Horizontal => calculate_horizontal_swing(progress),
                     SwingType::Vertical => calculate_vertical_swing(progress),
-                    SwingType::Diagonal => calculate_diagonal_swing(progress),
-                    SwingType::Circular => calculate_circular_swing(progress),
                 };
-
                 transform.translation = Vec3::new(position.x, position.y, 0.0);
                 transform.rotation = Quat::from_rotation_z(rotation);
             }
         }
     }
-}
-
-fn calculate_horizontal_swing(t: f32) -> (Vec2, f32) {
-    // Horizontal arc swing from left to right
-    let progress = smooth_step(t);
-    let angle = lerp(-PI * 0.4, PI * 0.4, progress);
-
-    // Use nalgebra for 2D calculations
-    let radius = 60.0;
-    let center = Point2::new(0.0, -20.0);
-
-    // Calculate position on arc
-    let x = angle.sin() * radius;
-    let y = center.y + (1.0 - angle.cos()) * 20.0; // Arc motion
-
-    let position = Vec2::new(x, y);
-    let rotation = angle + PI * 0.5; // Sword follows the arc
-
-    (position, rotation)
 }
 
 fn calculate_vertical_swing(t: f32) -> (Vec2, f32) {
@@ -123,44 +89,6 @@ fn calculate_vertical_swing(t: f32) -> (Vec2, f32) {
 
     // Rotation follows the swing direction
     let rotation = lerp(-PI * 0.2, PI * 0.7, progress);
-
-    (position, rotation)
-}
-
-fn calculate_diagonal_swing(t: f32) -> (Vec2, f32) {
-    // Diagonal slash from upper-left to lower-right
-    let progress = smooth_step(t);
-
-    // Create a curved diagonal path using nalgebra
-    let start = Point2::new(-60.0, 60.0);
-    let control1 = Point2::new(-20.0, 20.0);
-    let control2 = Point2::new(20.0, -20.0);
-    let end = Point2::new(60.0, -60.0);
-
-    // Cubic bezier curve
-    let pos = cubic_bezier(start, control1, control2, end, progress);
-    let position = Vec2::new(pos.x, pos.y);
-
-    // Rotation follows the diagonal direction
-    let rotation = lerp(PI * 0.75, -PI * 0.25, progress);
-
-    (position, rotation)
-}
-
-fn calculate_circular_swing(t: f32) -> (Vec2, f32) {
-    // Full circular swing
-    let progress = ease_in_out_cubic(t);
-    let angle = progress * PI * 2.0; // Full circle
-
-    // Use nalgebra for circular motion
-    let radius = 50.0;
-    let center = Point2::new(0.0, -10.0);
-
-    let x = center.x + angle.cos() * radius;
-    let y = center.y + angle.sin() * radius;
-
-    let position = Vec2::new(x, y);
-    let rotation = angle + PI * 0.5; // Sword tangent to circle
 
     (position, rotation)
 }
