@@ -68,12 +68,12 @@ fn spawn_sword_with_node(
             timer: Timer::from_seconds(0.8, TimerMode::Once), // Total animation time (legacy)
             
             // Phase 1: Startup - Move to attack position
-            startup_timer: Timer::from_seconds(0.2, TimerMode::Once), // 200ms to reach attack position
+            startup_timer: Timer::from_seconds(0.1, TimerMode::Once), // 200ms to reach attack position
             start_pos: Vec2::new(-20.0, 60.0), // Back and up for windup
-            start_rotation: -PI * 0.3, // Rotated back (~-54 degrees)
+            start_rotation: -PI * 0.2, // Rotated back (~-54 degrees)
             
             // Phase 2: Main swing
-            swing_timer: Timer::from_seconds(0.6, TimerMode::Once), // 400ms for main swing
+            swing_timer: Timer::from_seconds(0.4, TimerMode::Once), // 400ms for main swing
             
             // Phase 3: Recovery - Move to rest position  
             end_timer: Timer::from_seconds(0.2, TimerMode::Once), // 200ms to reach rest position
@@ -81,6 +81,8 @@ fn spawn_sword_with_node(
             is_swinging: false,
             swing_type: SwingType::Vertical,
             current_phase: SwingPhase::Startup, // Will be set properly in start_swing()
+            swing_end_pos: Vec2::ZERO,
+            swing_end_rotation: 0.0,
         },
             Sword::default(),
         ))

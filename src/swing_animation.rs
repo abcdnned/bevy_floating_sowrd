@@ -23,6 +23,9 @@ pub struct SwingAnimation {
     // Add phase tracking
     pub current_phase: SwingPhase,
     pub swing_timer: Timer, // For the main swing phase
+    // Store the actual end state of swing phase for recovery
+    pub swing_end_pos: Vec2,
+    pub swing_end_rotation: f32,
 }
 
 #[derive(Clone)]
@@ -95,6 +98,12 @@ fn animate_sword_swing(
                     let swing_progress = swing.swing_timer.elapsed_secs() / swing.swing_timer.duration().as_secs_f32();
                     
                     if swing_progress >= 1.0 {
+                        // Store the final swing position and rotation for recovery phase
+                        let (swing_position, swing_rotation) = match swing.swing_type {
+                            SwingType::Vertical => calculate_vertical_swing_cubic(1.0),
+                        };
+                        swing.swing_end_pos = swing.start_pos + swing_position;
+                        swing.swing_end_rotation = swing.start_rotation + swing_rotation;
                         // Move to recovery phase
                         swing.current_phase = SwingPhase::Recovery;
                         swing.end_timer.reset();
@@ -124,13 +133,9 @@ fn animate_sword_swing(
                         transform.translation = Vec3::ZERO;
                         transform.rotation = Quat::IDENTITY;
                     } else {
-                        // Get the current position from the end of swing phase
-                        let swing_end_pos = swing.start_pos + get_swing_end_position(swing.swing_type.clone());
-                        let swing_end_rotation = swing.start_rotation + get_swing_end_rotation(swing.swing_type.clone());
-                        
-                        // Linear interpolation back to origin
-                        let current_pos = Vec2::lerp(swing_end_pos, Vec2::ZERO, end_progress);
-                        let current_rotation = lerp(swing_end_rotation, 0.0, end_progress);
+                        // Linear interpolation from actual swing end position back to origin
+                        let current_pos = Vec2::lerp(swing.swing_end_pos, Vec2::ZERO, end_progress);
+                        let current_rotation = lerp(swing.swing_end_rotation, 0.0, end_progress);
                         
                         transform.translation = Vec3::new(current_pos.x, current_pos.y, 0.0);
                         transform.rotation = Quat::from_rotation_z(current_rotation);
