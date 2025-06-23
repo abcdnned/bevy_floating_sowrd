@@ -38,7 +38,7 @@ impl Plugin for SwordPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_sword_with_node).add_systems(
             Update,
-            (update_node_position, update_sword_position, check_swing_status).chain(),
+            (update_node_position, check_swing_status).chain(),
         );
     }
 }
@@ -170,12 +170,4 @@ fn update_node_position(
             transform.translation.y = world_pos.y;
         }
     }
-}
-
-// Update sword position relative to its parent node
-fn update_sword_position(mut sword_query: Query<(&mut Transform, &Sword), Without<SwordNode>>) {
-    // for (mut transform, sword) in sword_query.iter_mut() {
-    //     transform.translation.x = sword.offset.x;
-    //     transform.translation.y = sword.offset.y;
-    // }
 }
