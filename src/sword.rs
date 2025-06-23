@@ -20,7 +20,17 @@ impl Default for Sword {
 
 // New component to mark the intermediate node
 #[derive(Component)]
-pub struct SwordNode;
+pub struct SwordNode {
+    pub locked_position: Option<Vec2>, // Store locked position during swing
+}
+
+impl Default for SwordNode {
+    fn default() -> Self {
+        Self {
+            locked_position: None,
+        }
+    }
+}
 
 pub struct SwordPlugin;
 
@@ -28,7 +38,7 @@ impl Plugin for SwordPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_sword_with_node).add_systems(
             Update,
-            (update_node_position, update_sword_position).chain(),
+            (update_node_position, update_sword_position, check_swing_status).chain(),
         );
     }
 }
@@ -48,7 +58,7 @@ fn spawn_sword_with_node(
         .spawn((
             Transform::from_xyz(0.0, 0.0, 0.0),
             GlobalTransform::default(),
-            SwordNode,
+            SwordNode::default(),
         ))
         .id();
 
@@ -92,9 +102,46 @@ fn spawn_sword_with_node(
     commands.entity(node_entity).add_child(sword_entity);
 }
 
-// Update the node position to follow the mouse
+// Check swing status and manage position locking
+fn check_swing_status(
+    mut node_query: Query<(&mut SwordNode, &Children)>,
+    swing_query: Query<&SwingAnimation>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    camera_query: Query<(&Camera, &GlobalTransform)>,
+) {
+    for (mut sword_node, children) in node_query.iter_mut() {
+        // Find the sword child and check its swing status
+        let mut is_currently_swinging = false;
+        
+        for child in children.iter() {
+            if let Ok(swing_animation) = swing_query.get(child) {
+                is_currently_swinging = swing_animation.is_swinging;
+                break;
+            }
+        }
+
+        // If starting to swing and not already locked, lock the current mouse position
+        if is_currently_swinging && sword_node.locked_position.is_none() {
+            if let (Ok(window), Ok((camera, camera_transform))) = 
+                (window_query.single(), camera_query.single()) {
+                if let Some(cursor_pos) = window.cursor_position() {
+                    if let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, cursor_pos) {
+                        sword_node.locked_position = Some(world_pos);
+                    }
+                }
+            }
+        }
+        
+        // If swing finished, clear the lock (but keep position)
+        if !is_currently_swinging && sword_node.locked_position.is_some() {
+            sword_node.locked_position = None;
+        }
+    }
+}
+
+// Update the node position to follow the mouse (only when not locked)
 fn update_node_position(
-    mut node_query: Query<&mut Transform, (With<SwordNode>, Without<Sword>)>,
+    mut node_query: Query<(&mut Transform, &mut SwordNode), Without<Sword>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
 ) {
@@ -111,9 +158,17 @@ fn update_node_position(
         return;
     };
 
-    for mut transform in node_query.iter_mut() {
-        transform.translation.x = world_pos.x;
-        transform.translation.y = world_pos.y;
+    for (mut transform, mut sword_node) in node_query.iter_mut() {
+        // If we have a locked position, use that instead of mouse position
+        if let Some(locked_pos) = sword_node.locked_position {
+            transform.translation.x = locked_pos.x;
+            transform.translation.y = locked_pos.y;
+            
+        } else {
+            // Normal mouse following when not locked
+            transform.translation.x = world_pos.x;
+            transform.translation.y = world_pos.y;
+        }
     }
 }
 
