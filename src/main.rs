@@ -17,7 +17,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins((
-            CursorPlugin, // Handles cursor hiding/showing
+            // CursorPlugin, // Handles cursor hiding/showing
             SwordPlugin,  // Handles sword following mouse
             SwordColliderPlugin,
             PlayerPlugin,

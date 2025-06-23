@@ -22,14 +22,12 @@ impl Default for Sword {
 #[derive(Component)]
 pub struct SwordNode {
     pub locked_position: Option<Vec2>, // Store locked position during swing
-    pub offset: Vec2, // Offset to maintain after swing completion
 }
 
 impl Default for SwordNode {
     fn default() -> Self {
         Self {
             locked_position: None,
-            offset: Vec2::ZERO, // Initially no offset
         }
     }
 }
@@ -105,16 +103,19 @@ fn spawn_sword_with_node(
 }
 
 // Check swing status and manage position locking
+// Check swing status and manage position locking
 fn check_swing_status(
     mut node_query: Query<(&mut SwordNode, &Children, &Transform)>,
     swing_query: Query<&SwingAnimation>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
+    window_query: Query<&mut Window, With<PrimaryWindow>>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
 ) {
+    // Collect positions that need to be set to avoid borrowing issues
+    
     for (mut sword_node, children, node_transform) in node_query.iter_mut() {
         // Find the sword child and check its swing status
         let mut is_currently_swinging = false;
-        let mut was_swinging = sword_node.locked_position.is_some();
+        let was_swinging = sword_node.locked_position.is_some();
         
         for child in children.iter() {
             if let Ok(swing_animation) = swing_query.get(child) {
@@ -137,21 +138,15 @@ fn check_swing_status(
         
         // If swing just finished, calculate and set the offset
         if was_swinging && !is_currently_swinging && sword_node.locked_position.is_some() {
-            if let (Ok(window), Ok((camera, camera_transform))) = 
-                (window_query.single(), camera_query.single()) {
-                if let Some(cursor_pos) = window.cursor_position() {
-                    if let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, cursor_pos) {
-                        // Calculate offset: mouse position - node position
-                        let node_pos = Vec2::new(node_transform.translation.x, node_transform.translation.y);
-                        sword_node.offset = world_pos - node_pos;
-                    }
-                }
-            }
+            // Store the position to set later
+            let node_pos = Vec2::new(node_transform.translation.x, node_transform.translation.y);
+            println!("Swing finished - Node position: {:?}", node_pos);
             
             // Clear the lock
             sword_node.locked_position = None;
         }
     }
+    
 }
 
 // Update the node position to follow the mouse (only when not locked)
@@ -176,13 +171,13 @@ fn update_node_position(
     for (mut transform, mut sword_node) in node_query.iter_mut() {
         // If we have a locked position, use that instead of mouse position
         if let Some(locked_pos) = sword_node.locked_position {
-            let target_pos = locked_pos - sword_node.offset;
+            let target_pos = locked_pos;
             transform.translation.x = target_pos.x;
             transform.translation.y = target_pos.y;
             
         } else {
             // Normal mouse following when not locked, but apply the offset
-            let target_pos = world_pos - sword_node.offset;
+            let target_pos = world_pos;
             transform.translation.x = target_pos.x;
             transform.translation.y = target_pos.y;
         }
